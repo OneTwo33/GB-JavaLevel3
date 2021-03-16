@@ -90,7 +90,7 @@ public class ClientHandler {
         }
     }
 
-    private void authentication() throws IOException {
+    private void authentication() throws IOException, SQLException, ClassNotFoundException {
         while (true) {
             String str = in.readUTF();
             if (str.startsWith("/auth")) {
