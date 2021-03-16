@@ -1,26 +1,10 @@
 package ru.company.onetwo33.homework2;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.List;
+import java.sql.*;
 
 public class BaseAuthService implements AuthService {
 
-    private final List<User> usersFromDb;
-
     public BaseAuthService() throws SQLException, ClassNotFoundException {
-        Connection conn = SingletonConnection.getConnection();
-        Statement stmt = conn.createStatement();
-        ResultSet rs = stmt.executeQuery("SELECT * FROM users");
-        usersFromDb = new ArrayList<>();
-
-        while (rs.next()) {
-            User user = new User().userBuilder(rs);
-            usersFromDb.add(user);
-        }
     }
 
     @Override
@@ -29,11 +13,22 @@ public class BaseAuthService implements AuthService {
     }
 
     @Override
-    public String getNickByLoginPass(String login, String pass) {
-        for (User user : usersFromDb) {
-            if (user.getLogin().equals(login) && user.getPassword().equals(pass)) return user.getNick();
+    public String getNickByLoginPass(String login, String pass) throws SQLException, ClassNotFoundException {
+        User user = null;
+
+        Connection conn = SingletonConnection.getConnection();
+        PreparedStatement stmt = conn.prepareStatement("SELECT * FROM users WHERE login = ? AND password = ?");
+        stmt.setString(1, login);
+        stmt.setString(2, pass);
+        ResultSet rs = stmt.executeQuery();
+
+        while (rs.next()) {
+            user = new User().userBuilder(rs);
         }
-        return null;
+
+        if (user != null) return user.getNick();
+        else
+            return null;
     }
 
     @Override
